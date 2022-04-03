@@ -1,3 +1,4 @@
+from array import array
 from ctypes import CDLL
 from ctypes import Structure, Union
 from ctypes import (
@@ -10,6 +11,7 @@ from ctypes import (
     c_short, 
     c_ushort,
     c_char,
+    c_bool,
     c_char_p, 
     c_double, 
     c_float, 
@@ -23,80 +25,107 @@ import sys
 import subprocess as cmd
 
 from pycparser import parse_file, c_ast
-from pycparser.c_ast import PtrDecl, TypeDecl
+from pycparser.c_ast import PtrDecl, TypeDecl, EllipsisParam, Struct, Enum, ArrayDecl, FuncDecl
 
 
-def change_datatype(node):
-    if isinstance(node.type, PtrDecl):
-        datatype_name = node.type.type.type.names
-        if datatype_name == ["int"] or datatype_name == ["signed", "int"]:
-            return POINTER(c_int)
-        elif datatype_name == ["unsigned", "int"]:
-            return POINTER(c_uint)
-        elif datatype_name == ["long"] or datatype_name == ["long", "int"] or datatype_name == ["signed", "long"] or datatype_name == ["signed", "long", "long"]:
-            return POINTER(c_long)
-        elif datatype_name == ["unsigned", "long"] or datatype_name == ["unsigned", "long", "long"]:
-            return POINTER(c_ulong)
-        elif datatype_name == ["long", "long"] or datatype_name == ["long", "long", "int"] or datatype_name == ["signed", "long", "long"] or datatype_name == ["signed", "long", "long", "int"]:
-            return POINTER(c_longlong)
-        elif datatype_name == ["unsigned", "long", "long"] or datatype_name == ["unsigned", "long", "long", "int"]:
-            return POINTER(c_ulonglong)
-        elif datatype_name == ["short"]  or datatype_name == ["signed", "short"]:
-            return POINTER(c_short)
-        elif datatype_name == ["unsigned", "short"]:
-            return POINTER(c_ushort)
-        elif datatype_name == ["char"]:
-            return POINTER(c_char)
-        elif datatype_name == ["double"]:
-            return POINTER(c_double)
-        elif datatype_name == ["float"]:
-            return POINTER(c_float)
-        elif datatype_name == ["long", "double"]:
-            return POINTER(c_longdouble)
-        elif datatype_name[-1] == "char":
-            return c_char_p
-        elif datatype_name == ["void"]:
-            return c_void_p
-    
-    if isinstance(node.type, TypeDecl):
-        datatype_name = node.type.type.names
-        if datatype_name == ["int"] or datatype_name == ["signed", "int"]:
-            return c_int
-        elif datatype_name == ["unsigned", "int"]:
-            return c_uint
-        elif datatype_name == ["long"] or datatype_name == ["long", "int"] or datatype_name == ["signed", "long"] or datatype_name == ["signed", "long", "long"]:
-            return c_long
-        elif datatype_name == ["unsigned", "long"] or datatype_name == ["unsigned", "long", "long"]:
-            return c_ulong
-        elif datatype_name == ["long", "long"] or datatype_name == ["long", "long", "int"] or datatype_name == ["signed", "long", "long"] or datatype_name == ["signed", "long", "long", "int"]:
-            return c_longlong
-        elif datatype_name == ["unsigned", "long", "long"] or datatype_name == ["unsigned", "long", "long", "int"]:
-            return c_ulonglong
-        elif datatype_name == ["short"]  or datatype_name == ["signed", "short"]:
-            return c_short
-        elif datatype_name == ["unsigned", "short"]:
-            return c_ushort
-        elif datatype_name == ["char"]:
-            return c_char
-        elif datatype_name == ["double"]:
-            return c_double
-        elif datatype_name == ["float"]:
-            return c_float
-        elif datatype_name == ["long", "double"]:
-            return c_longdouble
-        elif datatype_name[-1] == "char":
-            return c_char
-        elif datatype_name == ["void"]:
-            return None
 
-    return Structure
 
 
 class cASTVisitor(c_ast.NodeVisitor):
-    def __init__(self, funcs, structs):
+    def __init__(self, funcs, structs, typedef):
         self.funcs_list = funcs
         self.structs_list = structs
+        self.typedefs = typedef
         super().__init__()
+
+
+    def change_datatype(self, node):
+        if isinstance(node.type, PtrDecl):
+            if isinstance(node.type.type, PtrDecl): # TODO: add support for pointer of pointer
+                return c_void_p
+            
+            datatype_name = node.type.type.type.names
+            
+            if datatype_name == ["int"] or datatype_name == ["signed", "int"]:
+                return POINTER(c_int)
+            elif datatype_name == ["unsigned", "int"]:
+                return POINTER(c_uint)
+            elif datatype_name == ["long"] or datatype_name == ["long", "int"] or datatype_name == ["signed", "long"] or datatype_name == ["signed", "long", "long"]:
+                return POINTER(c_long)
+            elif datatype_name == ["unsigned", "long"] or datatype_name == ["unsigned", "long", "long"]:
+                return POINTER(c_ulong)
+            elif datatype_name == ["long", "long"] or datatype_name == ["long", "long", "int"] or datatype_name == ["signed", "long", "long"] or datatype_name == ["signed", "long", "long", "int"]:
+                return POINTER(c_longlong)
+            elif datatype_name == ["unsigned", "long", "long"] or datatype_name == ["unsigned", "long", "long", "int"]:
+                return POINTER(c_ulonglong)
+            elif datatype_name == ["short"]  or datatype_name == ["signed", "short"]:
+                return POINTER(c_short)
+            elif datatype_name == ["unsigned", "short"]:
+                return POINTER(c_ushort)
+            elif datatype_name == ["char"]:
+                return POINTER(c_char)
+            elif datatype_name == ["double"]:
+                return POINTER(c_double)
+            elif datatype_name == ["float"]:
+                return POINTER(c_float)
+            elif datatype_name == ["long", "double"]:
+                return POINTER(c_longdouble)
+            elif datatype_name[-1] == "char":
+                return c_char_p
+            elif datatype_name == ["void"]:
+                return c_void_p
+        
+        if isinstance(node.type, TypeDecl):
+            datatype_name = node.type.type.names
+            if datatype_name == ["int"] or datatype_name == ["signed", "int"]:
+                return c_int
+            elif datatype_name == ["unsigned", "int"]:
+                return c_uint
+            elif datatype_name == ["long"] or datatype_name == ["long", "int"] or datatype_name == ["signed", "long"] or datatype_name == ["signed", "long", "long"]:
+                return c_long
+            elif datatype_name == ["unsigned", "long"] or datatype_name == ["unsigned", "long", "long"]:
+                return c_ulong
+            elif datatype_name == ["long", "long"] or datatype_name == ["long", "long", "int"] or datatype_name == ["signed", "long", "long"] or datatype_name == ["signed", "long", "long", "int"]:
+                return c_longlong
+            elif datatype_name == ["unsigned", "long", "long"] or datatype_name == ["unsigned", "long", "long", "int"]:
+                return c_ulonglong
+            elif datatype_name == ["short"]  or datatype_name == ["signed", "short"]:
+                return c_short
+            elif datatype_name == ["unsigned", "short"]:
+                return c_ushort
+            elif datatype_name == ["char"]:
+                return c_char
+            elif datatype_name == ["double"]:
+                return c_double
+            elif datatype_name == ["float"]:
+                return c_float
+            elif datatype_name == ["long", "double"]:
+                return c_longdouble
+            elif datatype_name[-1] == "char":
+                return c_char
+            elif datatype_name[-1] == "bool":
+                return c_bool
+            elif datatype_name == ["void"]:
+                return None
+
+        if isinstance(node.type, ArrayDecl):
+            array_len = int(node.type.dim.value)
+            if (t := self.change_datatype(node.type)) != Structure:
+                return t * array_len
+            
+            if isinstance(node.type.type, PtrDecl): # TODO: implement proper array of pointer to struct of typedef
+                return c_void_p * array_len
+            
+            for i in self.structs_list:
+                if i.__name__ == node.type.type.type.names[0]:
+                    return i * array_len
+            
+            for i in self.typedefs:
+                if i[0] == node.type.type.type.names[0]:
+                    return i[1] * array_len
+
+
+        return Structure
 
     def visit_FuncDecl(self, node):
         args_type = []
@@ -105,29 +134,34 @@ class cASTVisitor(c_ast.NodeVisitor):
 
         # Paser Arguments Type
         for i in node.args.params:
-            if (t := change_datatype(i)) != Structure:
-                args_type.append(t)
+            if not isinstance(i, EllipsisParam):    # TODO: add support for variable number of argument
+                if (t := self.change_datatype(i)) != Structure:
+                    args_type.append(t)
 
-            # logic for struct
-            else:
-                for j in self.structs_list:
-                    if isinstance(i.type, PtrDecl):
-                        if j.__name__ == i.type.type.type.names[0]:
-                            args_type.append(POINTER(j))
-                    else:
-                        if j.__name__ == i.type.type.names[0]:
-                            args_type.append(j)
+                # logic for struct
+                else:
+                    for j in self.structs_list:
+                        if isinstance(i.type, PtrDecl):
+                            if j.__name__ == i.type.type.type.names[0]:
+                                args_type.append(POINTER(j))
+                        else:
+                            if j.__name__ == i.type.type.names[0]:
+                                args_type.append(j)
 
 
         # Paser Return Type
         function_returns_ptr = isinstance(node.type, PtrDecl)
-        if (t := change_datatype(node)) != Structure:
+        function_returns_ptr_of_ptr = isinstance(node.type.type, PtrDecl)
+        if (t := self.change_datatype(node)) != Structure:
                 return_type = t
 
         # logic for struct
         else:
             for j in self.structs_list:
-                if function_returns_ptr:
+                if function_returns_ptr_of_ptr:
+                    if j.__name__ == node.type.type.type.type.names[0]:
+                        return_type = POINTER(j)
+                elif function_returns_ptr:
                     if j.__name__ == node.type.type.type.names[0]:
                         return_type = POINTER(j)
                 else:
@@ -135,7 +169,9 @@ class cASTVisitor(c_ast.NodeVisitor):
                         return_type = j
         
 
-        if function_returns_ptr:
+        if function_returns_ptr_of_ptr:
+            name = node.type.type.type.declname
+        elif function_returns_ptr:
             name = node.type.type.declname
         else:
             name = node.type.declname
@@ -143,6 +179,46 @@ class cASTVisitor(c_ast.NodeVisitor):
         # print((name, args_type, return_type))
         self.funcs_list.append((name, args_type, return_type))
         
+    def visit_Typedef(self, node):
+        # TODO: datatype convertions
+        # TODO: function pointers
+        if isinstance(node.type.type, Struct):
+            self.visit_Struct(node.type.type)
+        elif isinstance(node.type.type, Enum):
+            pass
+        elif isinstance(node.type.type, FuncDecl):
+            pass
+        else:
+            if (t := self.change_datatype(node)) == Structure:
+                for i in self.structs_list:
+                    if i.__name__ == node.type.type.names[0]:
+                        self.typedefs.append((node.name, i))
+                        break
+                else:
+                    for i in self.typedefs:
+                        if i[0] == node.type.type.names[0]:
+                            self.typedefs.append((node.name, i[1]))
+                            break
+                    else:
+                        ...
+            else:
+                self.typedefs.append((node.name, self.change_datatype(node)))
+        
+        # for j in self.structs_list:
+        #     if j.__name__ == i.type.type.names[0]:
+        #         self.structs_list.append(
+        #             type(i.name, (Structure,), {})
+        #         )
+        #         self.structs_list[-1]._fields_ = j._fields_
+        #         break
+        # else:
+
+
+
+
+
+        
+
 
     def visit_Struct(self, node):
         datatypes = []
@@ -150,7 +226,7 @@ class cASTVisitor(c_ast.NodeVisitor):
             for i in node.decls:
                 name = i.name
                 datatype = None
-                if (t := change_datatype(i)) != Structure:
+                if (t := self.change_datatype(i)) != Structure:
                     datatype = t
                 
                 # logic for struct
@@ -165,7 +241,19 @@ class cASTVisitor(c_ast.NodeVisitor):
                                     datatype = POINTER(j)
                                     break
                             else:
-                                raise TypeError(f"Could Not determine the type of {i.type.type.type.names}")
+                                for j in i.type.type.type.names:
+                                    if "atomic" in j:
+                                        return
+                                else:
+                                    for j in self.typedefs:
+                                        if j[0] == i.type.type.type.names[0]:
+                                            if j[1] != Structure:
+                                                datatype = POINTER(j[1])
+                                            else:
+                                                datatype = c_void_p
+                                            break
+                                    else:
+                                        raise TypeError(f"Could Not determine the type of {i.type.type.type.names}")
                         
 
                     else:
@@ -176,8 +264,18 @@ class cASTVisitor(c_ast.NodeVisitor):
                             for j in self.structs_list:
                                 if j.__name__ == i.type.type.names[0]:
                                     datatype = j
+                                    break
                             else:
-                                raise TypeError(f"Could Not determine the type of {i.type.type.names}")
+                                for j in i.type.type.names:
+                                    if "atomic" in j:
+                                        return
+                                else:
+                                    for j in self.typedefs:
+                                        if j[0] == i.type.type.names[0]:
+                                            datatype = j[1]
+                                            break
+                                    else:
+                                        raise TypeError(f"Could Not determine the type of {i.type.type.names}")
 
                 datatypes.append((name, datatype))
             
@@ -191,6 +289,9 @@ class cASTVisitor(c_ast.NodeVisitor):
                     datatypes[i] = (datatypes[i][0], POINTER(self.structs_list[-1]))
 
             self.structs_list[-1]._fields_ = datatypes
+
+        else:
+            self.typedefs.append((node.name, Structure))
 
 
 class CFunc:
@@ -250,7 +351,8 @@ class CModule:
     def get_symbols(self):
         l = []
         k = []
-        v = cASTVisitor(l, k)
+        m = []
+        v = cASTVisitor(l, k, m)
         v.visit(self.header_ast)
         self.functions = l
         self.structs = k
