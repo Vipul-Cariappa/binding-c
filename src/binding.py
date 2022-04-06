@@ -62,8 +62,6 @@ class cASTVisitor(c_ast.NodeVisitor):
                 return POINTER(c_short)
             elif datatype_name == ["unsigned", "short"]:
                 return POINTER(c_ushort)
-            elif datatype_name == ["char"]:
-                return POINTER(c_char)
             elif datatype_name == ["double"]:
                 return POINTER(c_double)
             elif datatype_name == ["float"]:
