@@ -5,7 +5,7 @@ lib = CLoad("libcmodule.so", "test/module.h")
 
 
 assert lib.add(12, 15) == 27
-assert lib.copy_int(9, 90)[0] == 90
+assert lib.copy_int(9, 90) == 90
 assert lib.concat(b'Vipul ', b'Cariappa') == b"Vipul Cariappa"
 assert lib.pi(400) == 3.1390926574960143
 

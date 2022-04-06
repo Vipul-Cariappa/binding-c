@@ -329,12 +329,12 @@ class CFunc:
                     self.args_type[i](args[i])
                 )
 
-        result = self.func(*c_args)
+        return self.func(*c_args)
 
-        if not tmp:
-            return result
+        # if not tmp:
+        #     return result
         
-        return result, tmp
+        # return result, tmp
 
 
 class CModule:
