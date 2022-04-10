@@ -1,7 +1,7 @@
 from pyC import CLoad
 
 
-lib = CLoad("libcmodule.so", "test/module.h")
+lib = CLoad("libcmodule.so", "test/c/module.h")
 
 
 assert lib.add(12, 15) == 27

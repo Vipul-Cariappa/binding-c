@@ -1,7 +1,7 @@
 
 tasks:
   - init: |
-      gcc -Wall -shared -fPIC -o ./libcmodule.so -I./test test/module.c
+      gcc -Wall -shared -fPIC -o ./libcmodule.so -I./test/c/ test/c/module.c
   - command: |
       sudo mv ./libcmodule.so /usr/lib/
       pip install -e .
