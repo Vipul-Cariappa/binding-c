@@ -1,4 +1,4 @@
-from binding import CLoad
+from pyC import CLoad
 
 
 lib = CLoad("libcmodule.so", "test/module.h")
