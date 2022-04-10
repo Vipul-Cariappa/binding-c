@@ -1,0 +1,11 @@
+
+tasks:
+  - init: |
+      gcc -Wall -shared -fPIC -o ./libcmodule.so -I./test test/module.c
+      sudo mv ./libcmodule.so /usr/lib/
+  - command: python test/test.py
+
+vscode:
+  extensions:
+    - ms-python.python
+    - https://github.com/microsoft/vscode-cpptools/releases/download/v1.9.7/cpptools-linux.vsix
