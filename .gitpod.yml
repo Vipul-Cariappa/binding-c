@@ -2,8 +2,9 @@
 tasks:
   - init: |
       gcc -Wall -shared -fPIC -o ./libcmodule.so -I./test test/module.c
+  - command: |
+      python test/test.py
       sudo mv ./libcmodule.so /usr/lib/
-  - command: python test/test.py
 
 vscode:
   extensions:
