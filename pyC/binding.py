@@ -133,41 +133,8 @@ class cASTVisitor(c_ast.NodeVisitor):
         return_type = None
         name = None
 
-        # Paser Arguments Type
-        for i in node.args.params:
-            # TODO: add support for variable number of argument
-            if not isinstance(i, EllipsisParam):
-                if (t := self.change_datatype(i)) != Structure:
-                    args_type.append(t)
-
-                # logic for struct
-                else:
-                    for j in self.structs_list:
-                        if isinstance(i.type, PtrDecl):
-                            if j.__name__ == i.type.type.type.names[0]:
-                                args_type.append(POINTER(j))
-                        else:
-                            if j.__name__ == i.type.type.names[0]:
-                                args_type.append(j)
-
-        # Paser Return Type
         function_returns_ptr = isinstance(node.type, PtrDecl)
         function_returns_ptr_of_ptr = isinstance(node.type.type, PtrDecl)
-        if (t := self.change_datatype(node)) != Structure:
-            return_type = t
-
-        # logic for struct
-        else:
-            for j in self.structs_list:
-                if function_returns_ptr_of_ptr:
-                    if j.__name__ == node.type.type.type.type.names[0]:
-                        return_type = POINTER(j)
-                elif function_returns_ptr:
-                    if j.__name__ == node.type.type.type.names[0]:
-                        return_type = POINTER(j)
-                else:
-                    if j.__name__ == node.type.type.names[0]:
-                        return_type = j
 
         if function_returns_ptr_of_ptr:
             name = node.type.type.type.declname
@@ -176,8 +143,45 @@ class cASTVisitor(c_ast.NodeVisitor):
         else:
             name = node.type.declname
 
-        # print((name, args_type, return_type))
-        self.funcs_list.append((name, args_type, return_type))
+        if node.args:
+            # Paser Arguments Type
+            for i in node.args.params:
+                # TODO: add support for variable number of argument
+                if not isinstance(i, EllipsisParam):
+                    if (t := self.change_datatype(i)) != Structure:
+                        args_type.append(t)
+
+                    # logic for struct
+                    else:
+                        for j in self.structs_list:
+                            if isinstance(i.type, PtrDecl):
+                                if j.__name__ == i.type.type.type.names[0]:
+                                    args_type.append(POINTER(j))
+                            else:
+                                if j.__name__ == i.type.type.names[0]:
+                                    args_type.append(j)
+
+            # Paser Return Type
+            if (t := self.change_datatype(node)) != Structure:
+                return_type = t
+
+            # logic for struct
+            else:
+                for j in self.structs_list:
+                    if function_returns_ptr_of_ptr:
+                        if j.__name__ == node.type.type.type.type.names[0]:
+                            return_type = POINTER(j)
+                    elif function_returns_ptr:
+                        if j.__name__ == node.type.type.type.names[0]:
+                            return_type = POINTER(j)
+                    else:
+                        if j.__name__ == node.type.type.names[0]:
+                            return_type = j
+
+            # print((name, args_type, return_type))
+            self.funcs_list.append((name, args_type, return_type))
+        else:
+            self.funcs_list.append((name, [], return_type))
 
     def visit_Typedef(self, node):
         # TODO: datatype convertions
@@ -293,12 +297,19 @@ class CFunc:
         self.func.restype = self.return_type
 
     def __call__(self, *args):
+        # TODO: raise type error if args does not match args_types and length (None / void)
         c_args = []
 
         # TODO: handle convertion of arrays / pointer to arrays
         for i in range(len(self.args_type)):
             if self.args_type[i] == None:
                 c_args.append(None)
+            elif self.args_type[i] == c_char_p or self.args_type[i] == POINTER(c_char) or self.args_type[i] == c_char:
+                c_args.append(
+                    self.args_type[i](
+                        bytes(args[i], encoding="ascii")
+                    )
+                )
             elif type(args[i]) == self.args_type[i]:
                 c_args.append(args[i])
             elif _ctypes.Structure in self.args_type[i].__bases__:  # Structure
@@ -323,7 +334,18 @@ class CFunc:
                     self.args_type[i](args[i])
                 )
 
-        return self.func(*c_args)
+        result = self.func(*c_args)
+
+        if self.return_type == c_char_p or self.return_type == POINTER(c_char) or self.return_type == c_char:
+            return result.decode()
+        elif _ctypes._Pointer in self.return_type.__bases__: # Pointer
+            if _ctypes.Structure in self.return_type._type_.__bases__: # Structure Pointer
+                return result.contents
+            else: # Simple dataypes pointer
+                return result.contents.value
+        else:
+            return result
+
 
 
 class CModule:

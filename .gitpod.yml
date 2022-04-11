@@ -10,4 +10,4 @@ tasks:
 vscode:
   extensions:
     - ms-python.python
-    - https://github.com/microsoft/vscode-cpptools/releases/download/v1.9.7/cpptools-linux.vsix
+    - llvm-vs-code-extensions.vscode-clangd
