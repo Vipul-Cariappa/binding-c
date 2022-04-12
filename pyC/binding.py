@@ -336,15 +336,18 @@ class CFunc:
 
         result = self.func(*c_args)
 
-        if self.return_type == c_char_p or self.return_type == POINTER(c_char) or self.return_type == c_char:
-            return result.decode()
-        elif _ctypes._Pointer in self.return_type.__bases__: # Pointer
-            if _ctypes.Structure in self.return_type._type_.__bases__: # Structure Pointer
-                return result.contents
-            else: # Simple dataypes pointer
-                return result.contents.value
-        else:
-            return result
+        if self.return_type:
+            if self.return_type == c_char_p or self.return_type == POINTER(c_char) or self.return_type == c_char:
+                return result.decode()
+            elif _ctypes._Pointer in self.return_type.__bases__: # Pointer
+                if _ctypes.Structure in self.return_type._type_.__bases__: # Structure Pointer
+                    return result.contents
+                else: # Simple dataypes pointer
+                    return result.contents.value
+            else:
+                return result
+        
+        return result
 
 
 
