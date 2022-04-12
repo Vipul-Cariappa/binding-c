@@ -60,14 +60,14 @@ RECT* rect_add(RECT* a, RECT* b)
     return result;
 }
 
-int get_area(RECT* a)
+int get_area(RECT a)
 {
-    return a->x * a->y;
+    return a.x * a.y;
 }
 
-int get_periment(RECT* a)
+int get_periment(RECT a)
 {
-    return 2 * (a->x + a->y);
+    return 2 * (a.x + a.y);
 }
 
 

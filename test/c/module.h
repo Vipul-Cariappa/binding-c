@@ -29,8 +29,8 @@ char* concat(char* x, char* y);
 double pi(int n);
 RECT* get_rect(int x, int y);
 RECT* rect_add(RECT* a, RECT* b);
-int get_area(RECT* a);
-int get_periment(RECT* a);
+int get_area(RECT a);
+int get_periment(RECT a);
 
 
 // Simple datatypes arguments and return type
