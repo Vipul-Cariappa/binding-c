@@ -86,16 +86,16 @@ char check_char(char x) {return x;}
 void check_void_1() {return;}
 void check_void_2(void) {return;}
 
-short check_const_short(const short x) {return 3.14; }
-int check_const_int(const int x) {return 3.14; }
-long check_const_long(const long x) {return 3.14; }
-long check_const_long_long(const long long x) {return 3.14; }
+short check_const_short(const short x) {return 3; }
+int check_const_int(const int x) {return 3; }
+long check_const_long(const long x) {return 3; }
+long check_const_long_long(const long long x) {return 3; }
 float check_const_float(const float x) {return 3.14; }
 double check_const_double(const double x) {return 3.14; }
-short check_const_unsigned_short(const unsigned short x) {return 3.14; }
-int check_const_unsigned_int(const unsigned int x) {return 3.14; }
-long check_const_unsigned_long(const unsigned long x) {return 3.14; }
-long check_const_unsigned_long_long(const unsigned long long x) {return 3.14; }
+short check_const_unsigned_short(const unsigned short x) {return 3; }
+int check_const_unsigned_int(const unsigned int x) {return 3; }
+long check_const_unsigned_long(const unsigned long x) {return 3; }
+long check_const_unsigned_long_long(const unsigned long long x) {return 3; }
 char check_const_char(const char x) {return '!'; }
 
 
@@ -126,16 +126,16 @@ unsigned long long* check_const_unsigned_long_long_ptr(const unsigned long long 
 char* check_const_char_ptr(const char *x) { char *r = malloc(sizeof(char)*2); *r = *x - 1; *(r+1) = 0; return r; }
 void* check_const_void_ptr(const void *x) { int *r = malloc(sizeof(int)); *r = 3; x = r; return r; }
 
-short* check_short_ptr_const(short* const x) { *x = -3.14; return x;}
-int* check_int_ptr_const(int* const x) { *x = -3.14; return x;}
-long* check_long_ptr_const(long* const x) { *x = -3.14; return x;}
-long long* check_long_long_ptr_const(long long* const x) { *x = -3.14; return x;}
+short* check_short_ptr_const(short* const x) { *x = -3; return x;}
+int* check_int_ptr_const(int* const x) { *x = -3; return x;}
+long* check_long_ptr_const(long* const x) { *x = -3; return x;}
+long long* check_long_long_ptr_const(long long* const x) { *x = -3; return x;}
 float* check_float_ptr_const(float* const x) { *x = -3.14; return x;}
 double* check_double_ptr_const(double* const x) { *x = -3.14; return x;}
-unsigned short* check_unsigned_short_ptr_const(unsigned short* const x) { *x = 3.14; return x;}
-unsigned int* check_unsigned_int_ptr_const(unsigned int* const x) { *x = 3.14; return x;}
-unsigned long* check_unsigned_long_ptr_const(unsigned long* const x) { *x = 3.14; return x;}
-unsigned long long* check_unsigned_long_long_ptr_const(unsigned long long* const x) { *x = 3.14; return x;}
+unsigned short* check_unsigned_short_ptr_const(unsigned short* const x) { *x = 3; return x;}
+unsigned int* check_unsigned_int_ptr_const(unsigned int* const x) { *x = 3; return x;}
+unsigned long* check_unsigned_long_ptr_const(unsigned long* const x) { *x = 3; return x;}
+unsigned long long* check_unsigned_long_long_ptr_const(unsigned long long* const x) { *x = 3; return x;}
 char* check_char_ptr_const(char* const x) { *x = '!'; return x;}
 void* check_void_ptr_const(void* const x) { return x; }
 
