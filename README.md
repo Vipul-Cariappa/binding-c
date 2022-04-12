@@ -79,6 +79,7 @@ print(f"pi: {pi}")
 ```
 
 ## Stuff to implemented
+- [ ] array support
 - [ ] Function pointer support
 - [ ] enum support
 - [ ] union support
