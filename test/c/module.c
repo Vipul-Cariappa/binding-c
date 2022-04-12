@@ -136,7 +136,7 @@ unsigned short* check_unsigned_short_ptr_const(unsigned short* const x) { *x = 3
 unsigned int* check_unsigned_int_ptr_const(unsigned int* const x) { *x = 3; return x;}
 unsigned long* check_unsigned_long_ptr_const(unsigned long* const x) { *x = 3; return x;}
 unsigned long long* check_unsigned_long_long_ptr_const(unsigned long long* const x) { *x = 3; return x;}
-char* check_char_ptr_const(char* const x) { *x = '!'; return x;}
+char* check_char_ptr_const(char* const x) { /* *x = '!'; */ return x;}
 void* check_void_ptr_const(void* const x) { return x; }
 
 short check_const_short_ptr_const(const short* const x) { return *x; }

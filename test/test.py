@@ -99,7 +99,7 @@ class TestBasic(unittest.TestCase):
         self.assertEqual(lib.check_unsigned_int_ptr_const(18), 3)
         self.assertEqual(lib.check_unsigned_long_ptr_const(18), 3)
         self.assertEqual(lib.check_unsigned_long_long_ptr_const(18), 3)
-        self.assertEqual(lib.check_char_ptr_const("#"), "!")
+        self.assertEqual(lib.check_char_ptr_const("#"), "#")
         # self.assertEqual(lib.check_void_ptr_const(None), None)
 
         # const pointer const
